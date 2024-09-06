@@ -5,7 +5,8 @@
 How do you identify issues when something goes wrong, or measure success when optimizing a system? Monitoring tools provide critical insights to detect problems early and validate improvements effectively.
 
 
-![Head](https://github.com/mdakacomfort/devops/grafana_prometheus/Images/Head.png)
+![Head](https://github.com/mdakacomfort/devops/blob/main/grafana_prometheus/Images/Head.png)
+
 
 ## Prerequisites
 
@@ -158,7 +159,7 @@ Add Prometheus as a data source:
 
     URL: http://prometheus:9090
 
-![Datasource](https://github.com/mdakacomfort/devops/grafana_prometheus/Images/Datasource.png)
+![Datasource](https://github.com/mdakacomfort/devops/blob/main/grafana_prometheus/Images/Datasource.png)
 
 Create a new dashboard with these example queries:
 
