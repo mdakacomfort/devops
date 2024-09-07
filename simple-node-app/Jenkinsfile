@@ -1,7 +1,6 @@
 pipeline {
     agent {
         kubernetes {
-            defaultContainer 'jnlp'
             yaml '''
             apiVersion: v1
             kind: Pod
@@ -30,11 +29,16 @@ pipeline {
                 }
             }
         }
+        stage('Test') {
+            steps {
+                container('docker') {
+                    sh 'docker run simple-node-app npm test'
+                }
+            }
+        }
         stage('Deploy') {
             steps {
-                sh 'kubectl apply -f deployment.yaml -n jenkins'
-                sh 'kubectl apply -f service.yaml -n jenkins'
-                sh 'kubectl apply -f hpa.yaml -n jenkins'
+                sh 'kubectl apply -f deployment.yaml'
             }
         }
     }
