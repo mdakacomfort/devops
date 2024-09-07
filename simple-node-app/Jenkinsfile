@@ -1,23 +1,40 @@
-agent {
-  kubernetes {
-    defaultContainer 'jnlp'
-    yaml '''
-    apiVersion: v1
-    kind: Pod
-    spec:
-      containers:
-      - name: docker
-        image: docker:dind
-        command:
-        - cat
-        tty: true
-        volumeMounts:
-        - name: docker-sock
-          mountPath: /var/run/docker.sock
-      volumes:
-      - name: docker-sock
-        hostPath:
-          path: /var/run/docker.sock
-    '''
-  }
+pipeline {
+    agent {
+        kubernetes {
+            defaultContainer 'jnlp'
+            yaml '''
+            apiVersion: v1
+            kind: Pod
+            spec:
+              containers:
+              - name: docker
+                image: docker:dind
+                command:
+                - cat
+                tty: true
+                volumeMounts:
+                - name: docker-sock
+                  mountPath: /var/run/docker.sock
+              volumes:
+              - name: docker-sock
+                hostPath:
+                  path: /var/run/docker.sock
+            '''
+        }
+    }
+    stages {
+        stage('Build') {
+            steps {
+                container('docker') {
+                    sh 'docker build -t simple-node-app .'
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl apply -f hpa.yaml'
+            }
+        }
+    }
 }
