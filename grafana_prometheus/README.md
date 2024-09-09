@@ -108,6 +108,7 @@ public IEnumerable<WeatherForecast> Get()
 
 ## Step 3: Set Up Prometheus and Grafana
 
+![Prometheus](https://github.com/mdakacomfort/devops/blob/main/grafana_prometheus/Images/Prometheus.png)
 Create docker-compose.yml
 
 ```
