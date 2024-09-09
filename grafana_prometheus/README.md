@@ -171,6 +171,8 @@ Last Request Duration: `weather_last_request_duration`
 Request Duration Heatmap: 
 `sum by (le) (increase(weather_request_duration_bucket[1m]))`
 
+![Grafana](https://github.com/mdakacomfort/devops/blob/main/grafana_prometheus/Images/Grafana.png)
+
 ## Next Steps
 Explore more Prometheus metrics and Grafana visualizations
 
