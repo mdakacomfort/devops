@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: e-commerce-config
+  namespace: e-commerce
+data:
+  PAYMENT_GATEWAY_URL: "http://payment-service"
+  PRODUCT_CATALOG_URL: "http://product-catalog"
+  RECOMMENDATION_ENGINE_URL: "http://recommendation-engine:5000"
+  DATABASE_URL: "sqlite:///products.db"
+
+#apiVersion: v1
+#kind: ConfigMap
+#metadata:
+#  name: e-commerce-config
+#  namespace: e-commerce
+#data:
+#  PAYMENT_GATEWAY_URL: "http://localhost:8080"
+#  PRODUCT_CATALOG_URL: "http://product-catalog"
+#  RECOMMENDATION_ENGINE_URL: "http://recommendation-engine:5000"
