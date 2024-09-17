@@ -94,7 +94,7 @@ a. Start Minikube:
 minikube start
 ```
 
-![Start](https://github.com/mdakacomfort/devops/tree/main/simple-node-app/Images/Start.png)
+![Start](https://github.com/mdakacomfort/devops/blob/main/simple-node-app/Images/Start.png)
 
 b. Enable necessary addons:
 ```bash
@@ -107,7 +107,7 @@ c. View addons:
 ```bash
 minikube addons list
 ```
-![Addons](https://github.com/mdakacomfort/devops/tree/main/simple-node-app/Images/Addons.png)
+![Addons](https://github.com/mdakacomfort/devops/blob/main/simple-node-app/Images/Addons.png)
 
 ### 5. Deploy Jenkins to Minikube
 
@@ -186,7 +186,7 @@ b. Install suggested plugins and create an admin user.
 
 c. Install additional plugins: Kubernetes plugin, Docker Pipeline plugin.
 
-![Plugins](https://github.com/mdakacomfort/devops/tree/main/simple-node-app/Images/Plugins.png)
+![Plugins](https://github.com/mdakacomfort/devops/blob/main/simple-node-app/Images/Plugins.png)
 
 d. Configure Kubernetes cloud in Jenkins:
 - Manage Jenkins > Manage Nodes and Clouds > Configure Clouds
@@ -275,7 +275,7 @@ a. Create a new pipeline job in Jenkins, pointing to your GitHub repository.
 
 b. Run the pipeline and monitor its progress.
 
-![Pipeline](https://github.com/mdakacomfort/devops/tree/main/simple-node-app/Images/Pipeline.png)
+![Pipeline](https://github.com/mdakacomfort/devops/blob/main/simple-node-app/Images/Pipeline.png)
 
 ### 9. Verify Deployment
 
