@@ -16,7 +16,7 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    return "Welcome to the Flask App with PostgreSQL!"
+    return "Welcome to the Flask App with PostgresSQL!"
 
 @app.route('/data')
 def get_data():
@@ -26,7 +26,7 @@ def get_data():
     db_version = cur.fetchone()
     cur.close()
     conn.close()
-    return jsonify({"PostgreSQL Version": db_version})
+    return jsonify({"PostgresSQL Version": db_version})
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5000)
