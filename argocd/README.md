@@ -2,11 +2,14 @@
 
 This guide walks you through setting up ArgoCD on a Minikube cluster to automatically deploy changes from a GitHub repository to your Kubernetes deployment, including troubleshooting common issues.
 
+![Applications](https://github.com/mdakacomfort/devops/blob/main/argocd/Images/Applications.png)
+
+
 ## Prerequisites
 
 - Minikube installed and running
 - kubectl installed and configured to use your Minikube cluster
-- A GitHub account and a repository with your Kubernetes manifests (You can clone repo, but try to create your own)
+- A GitHub account and a repository with your Kubernetes manifests (You can clone my repo, but try to create your own)
 - Git installed on your local machine
 - Docker installed for building and pushing images
 
@@ -55,7 +58,125 @@ repo/
    kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=argocd-server -n argocd
    ```
 
-## Step 2: Access ArgoCD UI
+## Step 2: Set Up FlaskApp
+
+1. Create a flask-app-deployment.yaml file (contents are in the repo)
+
+
+2. Create a flask-app-service.yaml (contents are in the repo)
+
+
+3. Apply the deployments:
+   ```
+   kubectl apply -f flask-app-deployment.yaml
+   kubectl apply -f flask-app-service.yaml
+   ```
+
+
+## Step 3: Set Up PostgreSQL
+Create/Update your postgres-secret.yaml file:
+```
+apiVersion: v1
+kind: Secret
+metadata:
+name: postgres-secret
+type: Opaque
+data:
+POSTGRES_DB: <base64-encoded-db-name>
+POSTGRES_USER: <base64-encoded-username>
+POSTGRES_PASSWORD: <base64-encoded-password>
+```
+Replace <base64-encoded-*> with your actual base64 encoded values.
+
+See URL for encoding credentials: https://www.base64encode.org/
+
+Create a postgres-pvc.yaml file:
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+Create a postgres-deployment.yaml file:
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:13
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_DB
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+          ports:
+            - containerPort: 5432
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-storage
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+```
+
+Create a postgres-service.yaml file:
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+spec:
+  type: ClusterIP
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+
+```
+
+Apply postgres deployments:
+
+```
+kubectl apply -f postgres-secret.yaml
+kubectl apply -f postgres-pvc.yaml
+kubectl apply -f postgres-service.yaml
+kubectl apply -f postgres-deployment.yaml
+```
+
+   
+## Step 4: Access ArgoCD UI
 
 1. Port-forward the ArgoCD server:
    ```
@@ -71,7 +192,7 @@ repo/
 
 4. Log in with username `admin` and the password obtained in step 3.
 
-## Step 3: Configure ArgoCD to Watch Your GitHub Repository
+## Step 5: Configure ArgoCD to Watch Your GitHub Repository
 
 1. In the ArgoCD UI, click on '+ NEW APP'
 
@@ -81,11 +202,14 @@ repo/
     - Sync Policy: Choose 'Automatic' for auto-sync
     - Repository URL: Your GitHub repository URL (e.g., https://github.com/yourusername/yourrepo.git)
     - Revision: Main branch (or whichever branch you want to sync from)
-    - Path: The path in your repo where Kubernetes manifests are located
+    - Path: The path in your repo where Kubernetes manifests are located (in our case its `argo`)
     - Cluster: https://kubernetes.default.svc
     - Namespace: The namespace where you want to deploy your application
 
 3. Click 'Create' to set up the application
+
+![AppCreation](https://github.com/mdakacomfort/devops/blob/main/argocd/Images/AppCreation.png)
+
 
 ## Troubleshooting
 
@@ -143,55 +267,11 @@ Save this to `argocd-project.yaml` and apply:
 ```
 kubectl apply -f argocd-project.yaml
 ```
+![Status](https://github.com/mdakacomfort/devops/blob/main/argocd/Images/Status.png)
 
-### Repository Not Accessible
+## Step 6: Set Up Python
 
-1. Ensure you're using the correct repository URL format:
-    - Use: `https://github.com/username/repo.git`
-    - Not: `https://github.com/username/repo/tree/`
-
-2. For private repositories, add credentials in ArgoCD UI:
-    - Go to Settings > Repositories
-    - Click "Connect Repo"
-    - Choose "Via HTTPS"
-    - Enter your repository details and GitHub credentials
-
-### Invalid Application Name
-
-Ensure your application name follows Kubernetes naming conventions:
-- Use only lowercase letters, numbers, or hyphens
-- Start and end with an alphanumeric character
-- Maximum length of 253 characters
-
-Example: "my-app" or "test-application"
-
-
-## Step4: Set Up PostgreSQL
-Create a postgres-secret.yaml file:
-```
-apiVersion: v1
-kind: Secret
-metadata:
-name: postgres-secret
-type: Opaque
-data:
-POSTGRES_DB: <base64-encoded-db-name>
-POSTGRES_USER: <base64-encoded-username>
-POSTGRES_PASSWORD: <base64-encoded-password>
-```
-Replace <base64-encoded-*> with your actual base64 encoded values.
-
-Apply the secret:
-
-```
-kubectl apply -f postgres-secret.yaml
-```
-
-Create and apply the PostgreSQL deployment and service YAML files.
-
-## Step 5: Set Up Flask Application
-
-Update your app.py to use environment variables for database connection:
+Create an app.py file:
 ```
 import os
 from flask import Flask, jsonify
@@ -240,43 +320,19 @@ COPY . .
 
 CMD ["python", "app.py"]
 ```
-
+Create a requirements.txt file:
+```
+Flask==2.0.1
+Werkzeug==2.0.1
+psycopg2-binary==2.9.3
+```
 Build and push your Docker image:
 ```
+docker login
 docker build -t yourdockerhubusername/flask-app:latest .
 docker push yourdockerhubusername/flask-app:latest
 ```
 
-Create a flask-app-deployment.yaml:
-```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-name: flask-app
-spec:
-replicas: 2
-selector:
-matchLabels:
-app: flask-app
-template:
-metadata:
-labels:
-app: flask-app
-spec:
-containers:
-- name: flask-app
-image: yourdockerhubusername/flask-app:latest
-ports:
-- containerPort: 5000
-envFrom:
-- secretRef:
-name: postgres-secret
-```
-
-Apply the Flask app deployment:
-```
-kubectl apply -f flask-app-deployment.yaml
-```
 
 ## Step 6: Testing the Application
 
@@ -287,8 +343,10 @@ kubectl port-forward svc/flask-app-service 5000:5000
 Access the application:
 
 Welcome page: http://localhost:5000/
+
 Database info: http://localhost:5000/data
 
+![Diff](https://github.com/mdakacomfort/devops/blob/main/argocd/Images/Diff.png)
 
 ## Troubleshooting
 Check Pod Status
