@@ -2,7 +2,7 @@
 
 This guide walks you through setting up ArgoCD on a Minikube cluster to automatically deploy changes from a GitHub repository to your Kubernetes deployment, including troubleshooting common issues.
 
-![Applications](https://github.com/mdakacomfort/devops/blob/main/argocd/Images/Applications.png)
+![Status](https://github.com/mdakacomfort/devops/blob/main/argocd/Images/Status.png)
 
 
 ## Prerequisites
